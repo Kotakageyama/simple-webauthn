@@ -1,0 +1,138 @@
+openapi: 3.0.0
+info:
+    title: "WebAuthn API"
+    description: "This is a WebAuthn API"
+    version: "1.0.0"
+paths:
+    /passkey/register-challenge:
+        post:
+            operationId: register-challenge-passkey
+            summary: "Register a new passkey"
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                email:
+                                    type: string
+                                    format: email
+            responses:
+                "200":
+                    description: "Challenge generated"
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    challenge:
+                                        type: string
+    /passkey/login-challenge:
+        post:
+            operationId: login-challenge-passkey
+            summary: "Generate a login challenge"
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                email:
+                                    type: string
+                                    format: email
+            responses:
+                "200":
+                    description: "Challenge generated"
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    challenge:
+                                        type: string
+    /passkey/register:
+        post:
+            operationId: register-passkey
+            summary: "Register a passkey"
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                email:
+                                    type: string
+                                    format: email
+                                challenge:
+                                    type: string
+                                credential:
+                                    type: object
+                                    properties:
+                                        id:
+                                            type: string
+                                        rawId:
+                                            type: string
+                                        response:
+                                            type: object
+                                            properties:
+                                                attestationObject:
+                                                    type: string
+                                                clientDataJSON:
+                                                    type: string
+                                        type:
+                                            type: string
+            responses:
+                "200":
+                    description: "Passkey registered"
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+    /passkey/login:
+        post:
+            operationId: login-passkey
+            summary: "Login with a passkey"
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                email:
+                                    type: string
+                                    format: email
+                                challenge:
+                                    type: string
+                                credential:
+                                    type: object
+                                    properties:
+                                        id:
+                                            type: string
+                                        rawId:
+                                            type: string
+                                        response:
+                                            type: object
+                                            properties:
+                                                authenticatorData:
+                                                    type: string
+                                                clientDataJSON:
+                                                    type: string
+                                                signature:
+                                                    type: string
+                                                userHandle:
+                                                    type: string
+                                        type:
+                                            type: string
+            responses:
+                "200":
+                    description: "Login successful"
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
