@@ -8,6 +8,8 @@ paths:
         post:
             operationId: register-challenge-passkey
             summary: "Register a new passkey"
+            tags:
+                - WebAuthn
             requestBody:
                 content:
                     application/json:
@@ -23,116 +25,101 @@ paths:
                     content:
                         application/json:
                             schema:
-                                type: object
-                                properties:
-                                    challenge:
-                                        type: string
+                                $ref: "#/components/schemas/RegisterChallengePasskeyResponse"
+                    headers:
+                        Set-Cookie:
+                            description: Set-Cookie
+                            schema:
+                                type: string
     /passkey/login-challenge:
         post:
             operationId: login-challenge-passkey
             summary: "Generate a login challenge"
+            tags:
+                - WebAuthn
             requestBody:
                 content:
                     application/json:
                         schema:
-                            type: object
-                            properties:
-                                email:
-                                    type: string
-                                    format: email
+                            $ref: '#/components/schemas/LoginChallengePasskeyRequest'
             responses:
-                "200":
-                    description: "Challenge generated"
+                '200':
+                    description: OK
                     content:
                         application/json:
                             schema:
-                                type: object
-                                properties:
-                                    challenge:
-                                        type: string
+                                $ref: '#/components/schemas/LoginChallengePasskeyResponse'
+                    headers:
+                        Set-Cookie:
+                            description: Set-Cookie
+                            schema:
+                                type: string
     /passkey/register:
         post:
             operationId: register-passkey
             summary: "Register a passkey"
+            tags:
+                - WebAuthn
+            parameters:
+                - name: __attestation__
+                  in: cookie
+                  description: session
+                  required: true
+                  schema:
+                        type: string
+                        example: session
             requestBody:
                 content:
                     application/json:
                         schema:
-                            type: object
-                            properties:
-                                email:
-                                    type: string
-                                    format: email
-                                challenge:
-                                    type: string
-                                credential:
-                                    type: object
-                                    properties:
-                                        id:
-                                            type: string
-                                        rawId:
-                                            type: string
-                                        response:
-                                            type: object
-                                            properties:
-                                                attestationObject:
-                                                    type: string
-                                                clientDataJSON:
-                                                    type: string
-                                        type:
-                                            type: string
+                            $ref: '#/components/schemas/RegisterPasskeyRequest'
             responses:
-                "200":
-                    description: "Passkey registered"
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    status:
-                                        type: string
+                '201':
+                    description: Created
     /passkey/login:
         post:
             operationId: login-passkey
             summary: "Login with a passkey"
+            tags:
+                - WebAuthn
+            parameters:
+                - name: __assertion__
+                  in: cookie
+                  description: session
+                  required: true
+                  schema:
+                        type: string
+                        example: session
             requestBody:
                 content:
                     application/json:
                         schema:
-                            type: object
-                            properties:
-                                email:
-                                    type: string
-                                    format: email
-                                challenge:
-                                    type: string
-                                credential:
-                                    type: object
-                                    properties:
-                                        id:
-                                            type: string
-                                        rawId:
-                                            type: string
-                                        response:
-                                            type: object
-                                            properties:
-                                                authenticatorData:
-                                                    type: string
-                                                clientDataJSON:
-                                                    type: string
-                                                signature:
-                                                    type: string
-                                                userHandle:
-                                                    type: string
-                                        type:
-                                            type: string
+                            $ref: '#/components/schemas/LoginPasskeyRequest'
             responses:
-                "200":
-                    description: "Login successful"
+                '200':
+                    description: OK
                     content:
                         application/json:
                             schema:
-                                type: object
-                                properties:
-                                    status:
-                                        type: string
+                                $ref: '#/components/schemas/LoginPasskeyResponse'
+
+components:
+  schemas:
+    RegisterChallengePasskeyResponse:
+      type: object
+      description: Initialize Attestation Response
+    LoginChallengePasskeyResponse:
+      type: object
+      description: Initialize Assertion Response
+    RegisterPasskeyRequest:
+      type: object
+      description: Finalize Attestation Request
+    LoginChallengePasskeyRequest:
+      type: object
+      description: Initialize Assertion Response
+    LoginPasskeyRequest:
+      type: object
+      description: Finalize Assertion Request
+    LoginPasskeyResponse:
+      type: object
+      description: Finalize Assertion Response

@@ -75,7 +75,20 @@ export interface paths {
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: never;
+    schemas: {
+        /** @description Initialize Attestation Response */
+        RegisterChallengePasskeyResponse: Record<string, never>;
+        /** @description Initialize Assertion Response */
+        LoginChallengePasskeyResponse: Record<string, never>;
+        /** @description Finalize Attestation Request */
+        RegisterPasskeyRequest: Record<string, never>;
+        /** @description Initialize Assertion Response */
+        LoginChallengePasskeyRequest: Record<string, never>;
+        /** @description Finalize Assertion Request */
+        LoginPasskeyRequest: Record<string, never>;
+        /** @description Finalize Assertion Response */
+        LoginPasskeyResponse: Record<string, never>;
+    };
     responses: never;
     parameters: never;
     requestBodies: never;
@@ -103,12 +116,12 @@ export interface operations {
             /** @description Challenge generated */
             200: {
                 headers: {
+                    /** @description Set-Cookie */
+                    "Set-Cookie"?: string;
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        challenge?: string;
-                    };
+                    "application/json": components["schemas"]["RegisterChallengePasskeyResponse"];
                 };
             };
         };
@@ -122,22 +135,19 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": {
-                    /** Format: email */
-                    email?: string;
-                };
+                "application/json": components["schemas"]["LoginChallengePasskeyRequest"];
             };
         };
         responses: {
-            /** @description Challenge generated */
+            /** @description OK */
             200: {
                 headers: {
+                    /** @description Set-Cookie */
+                    "Set-Cookie"?: string;
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        challenge?: string;
-                    };
+                    "application/json": components["schemas"]["LoginChallengePasskeyResponse"];
                 };
             };
         };
@@ -147,37 +157,23 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie: {
+                /** @description session */
+                __attestation__: string;
+            };
         };
         requestBody?: {
             content: {
-                "application/json": {
-                    /** Format: email */
-                    email?: string;
-                    challenge?: string;
-                    credential?: {
-                        id?: string;
-                        rawId?: string;
-                        response?: {
-                            attestationObject?: string;
-                            clientDataJSON?: string;
-                        };
-                        type?: string;
-                    };
-                };
+                "application/json": components["schemas"]["RegisterPasskeyRequest"];
             };
         };
         responses: {
-            /** @description Passkey registered */
-            200: {
+            /** @description Created */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": {
-                        status?: string;
-                    };
-                };
+                content?: never;
             };
         };
     };
@@ -186,38 +182,24 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie: {
+                /** @description session */
+                __assertion__: string;
+            };
         };
         requestBody?: {
             content: {
-                "application/json": {
-                    /** Format: email */
-                    email?: string;
-                    challenge?: string;
-                    credential?: {
-                        id?: string;
-                        rawId?: string;
-                        response?: {
-                            authenticatorData?: string;
-                            clientDataJSON?: string;
-                            signature?: string;
-                            userHandle?: string;
-                        };
-                        type?: string;
-                    };
-                };
+                "application/json": components["schemas"]["LoginPasskeyRequest"];
             };
         };
         responses: {
-            /** @description Login successful */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        status?: string;
-                    };
+                    "application/json": components["schemas"]["LoginPasskeyResponse"];
                 };
             };
         };

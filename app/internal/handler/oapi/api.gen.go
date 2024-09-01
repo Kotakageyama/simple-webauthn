@@ -8,44 +8,38 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/oapi-codegen/runtime"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// LoginPasskeyJSONBody defines parameters for LoginPasskey.
-type LoginPasskeyJSONBody struct {
-	Challenge  *string `json:"challenge,omitempty"`
-	Credential *struct {
-		Id       *string `json:"id,omitempty"`
-		RawId    *string `json:"rawId,omitempty"`
-		Response *struct {
-			AuthenticatorData *string `json:"authenticatorData,omitempty"`
-			ClientDataJSON    *string `json:"clientDataJSON,omitempty"`
-			Signature         *string `json:"signature,omitempty"`
-			UserHandle        *string `json:"userHandle,omitempty"`
-		} `json:"response,omitempty"`
-		Type *string `json:"type,omitempty"`
-	} `json:"credential,omitempty"`
-	Email *openapi_types.Email `json:"email,omitempty"`
+// LoginChallengePasskeyRequest Initialize Assertion Response
+type LoginChallengePasskeyRequest = map[string]interface{}
+
+// LoginChallengePasskeyResponse Initialize Assertion Response
+type LoginChallengePasskeyResponse = map[string]interface{}
+
+// LoginPasskeyRequest Finalize Assertion Request
+type LoginPasskeyRequest = map[string]interface{}
+
+// LoginPasskeyResponse Finalize Assertion Response
+type LoginPasskeyResponse = map[string]interface{}
+
+// RegisterChallengePasskeyResponse Initialize Attestation Response
+type RegisterChallengePasskeyResponse = map[string]interface{}
+
+// RegisterPasskeyRequest Finalize Attestation Request
+type RegisterPasskeyRequest = map[string]interface{}
+
+// LoginPasskeyParams defines parameters for LoginPasskey.
+type LoginPasskeyParams struct {
+	// Assertion session
+	Assertion string `form:"__assertion__" json:"__assertion__"`
 }
 
-// LoginChallengePasskeyJSONBody defines parameters for LoginChallengePasskey.
-type LoginChallengePasskeyJSONBody struct {
-	Email *openapi_types.Email `json:"email,omitempty"`
-}
-
-// RegisterPasskeyJSONBody defines parameters for RegisterPasskey.
-type RegisterPasskeyJSONBody struct {
-	Challenge  *string `json:"challenge,omitempty"`
-	Credential *struct {
-		Id       *string `json:"id,omitempty"`
-		RawId    *string `json:"rawId,omitempty"`
-		Response *struct {
-			AttestationObject *string `json:"attestationObject,omitempty"`
-			ClientDataJSON    *string `json:"clientDataJSON,omitempty"`
-		} `json:"response,omitempty"`
-		Type *string `json:"type,omitempty"`
-	} `json:"credential,omitempty"`
-	Email *openapi_types.Email `json:"email,omitempty"`
+// RegisterPasskeyParams defines parameters for RegisterPasskey.
+type RegisterPasskeyParams struct {
+	// Attestation session
+	Attestation string `form:"__attestation__" json:"__attestation__"`
 }
 
 // RegisterChallengePasskeyJSONBody defines parameters for RegisterChallengePasskey.
@@ -54,13 +48,13 @@ type RegisterChallengePasskeyJSONBody struct {
 }
 
 // LoginPasskeyJSONRequestBody defines body for LoginPasskey for application/json ContentType.
-type LoginPasskeyJSONRequestBody LoginPasskeyJSONBody
+type LoginPasskeyJSONRequestBody = LoginPasskeyRequest
 
 // LoginChallengePasskeyJSONRequestBody defines body for LoginChallengePasskey for application/json ContentType.
-type LoginChallengePasskeyJSONRequestBody LoginChallengePasskeyJSONBody
+type LoginChallengePasskeyJSONRequestBody = LoginChallengePasskeyRequest
 
 // RegisterPasskeyJSONRequestBody defines body for RegisterPasskey for application/json ContentType.
-type RegisterPasskeyJSONRequestBody RegisterPasskeyJSONBody
+type RegisterPasskeyJSONRequestBody = RegisterPasskeyRequest
 
 // RegisterChallengePasskeyJSONRequestBody defines body for RegisterChallengePasskey for application/json ContentType.
 type RegisterChallengePasskeyJSONRequestBody RegisterChallengePasskeyJSONBody
@@ -69,13 +63,13 @@ type RegisterChallengePasskeyJSONRequestBody RegisterChallengePasskeyJSONBody
 type ServerInterface interface {
 	// Login with a passkey
 	// (POST /passkey/login)
-	LoginPasskey(w http.ResponseWriter, r *http.Request)
+	LoginPasskey(w http.ResponseWriter, r *http.Request, params LoginPasskeyParams)
 	// Generate a login challenge
 	// (POST /passkey/login-challenge)
 	LoginChallengePasskey(w http.ResponseWriter, r *http.Request)
 	// Register a passkey
 	// (POST /passkey/register)
-	RegisterPasskey(w http.ResponseWriter, r *http.Request)
+	RegisterPasskey(w http.ResponseWriter, r *http.Request, params RegisterPasskeyParams)
 	// Register a new passkey
 	// (POST /passkey/register-challenge)
 	RegisterChallengePasskey(w http.ResponseWriter, r *http.Request)
@@ -87,7 +81,7 @@ type Unimplemented struct{}
 
 // Login with a passkey
 // (POST /passkey/login)
-func (_ Unimplemented) LoginPasskey(w http.ResponseWriter, r *http.Request) {
+func (_ Unimplemented) LoginPasskey(w http.ResponseWriter, r *http.Request, params LoginPasskeyParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -99,7 +93,7 @@ func (_ Unimplemented) LoginChallengePasskey(w http.ResponseWriter, r *http.Requ
 
 // Register a passkey
 // (POST /passkey/register)
-func (_ Unimplemented) RegisterPasskey(w http.ResponseWriter, r *http.Request) {
+func (_ Unimplemented) RegisterPasskey(w http.ResponseWriter, r *http.Request, params RegisterPasskeyParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -122,8 +116,29 @@ type MiddlewareFunc func(http.Handler) http.Handler
 func (siw *ServerInterfaceWrapper) LoginPasskey(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params LoginPasskeyParams
+
+	var cookie *http.Cookie
+
+	if cookie, err = r.Cookie("__assertion__"); err == nil {
+		var value string
+		err = runtime.BindStyledParameterWithOptions("simple", "__assertion__", cookie.Value, &value, runtime.BindStyledParameterOptions{Explode: true, Required: true})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "__assertion__", Err: err})
+			return
+		}
+		params.Assertion = value
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "__assertion__"})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.LoginPasskey(w, r)
+		siw.Handler.LoginPasskey(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -152,8 +167,29 @@ func (siw *ServerInterfaceWrapper) LoginChallengePasskey(w http.ResponseWriter, 
 func (siw *ServerInterfaceWrapper) RegisterPasskey(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params RegisterPasskeyParams
+
+	var cookie *http.Cookie
+
+	if cookie, err = r.Cookie("__attestation__"); err == nil {
+		var value string
+		err = runtime.BindStyledParameterWithOptions("simple", "__attestation__", cookie.Value, &value, runtime.BindStyledParameterOptions{Explode: true, Required: true})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "__attestation__", Err: err})
+			return
+		}
+		params.Attestation = value
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "__attestation__"})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.RegisterPasskey(w, r)
+		siw.Handler.RegisterPasskey(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
