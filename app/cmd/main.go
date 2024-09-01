@@ -43,6 +43,12 @@ func main() {
 		MaxAge:           300, // キャッシュの有効期限（秒）
 	}
 	r.Use(cors.Handler(corsOptions))
+
+	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	})
+
 	handler := di.Wire(nil)
 	h := oapi.HandlerFromMux(handler, r)
 
@@ -54,5 +60,8 @@ func main() {
 	}
 
 	// And we serve HTTP until the world ends.
-	log.Fatal(s.ListenAndServe())
+	if err := s.ListenAndServe(); err != nil {
+		log.Println("Server shutdown...")
+		log.Fatal(err)
+	}
 }

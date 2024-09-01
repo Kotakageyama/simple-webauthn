@@ -18,8 +18,9 @@ services:
       context: ./app
     ports:
       - "8080:8080"
+    tty: true
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -31,3 +32,6 @@ services:
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=simplewebauthndb
+    ports:
+      - "5432:5432"
