@@ -29,14 +29,17 @@ export function PasskeyLogin() {
 		try {
 			if (isRegistration) {
 				// 登録時のチャレンジを取得
-				const { response: challengeResponse } = await apiClient.POST(
+				const challengeResponse = await apiClient.POST(
 					"/passkey/register-challenge",
 					{
 						params: {},
 						body: { email },
 					}
 				);
-				const challengeData = await challengeResponse.json();
+
+				const challengeData = await challengeResponse.response.json();
+				const setCookie =
+					challengeResponse.response.headers.get("Set-Cookie") || "";
 
 				// Passkeyの登録
 				const regResult = await startRegistration(challengeData);
@@ -46,50 +49,46 @@ export function PasskeyLogin() {
 					"/passkey/register",
 					{
 						params: {
-							cookie: 
+							cookie: {
+								__attestation__: setCookie,
+							},
+							body: JSON.stringify(regResult),
 						},
 					}
 				);
-				// const verificationResponse = await fetch(
-				// 	`${process.env.BACKEND_URL}/passkey/register`,
-				// 	{
-				// 		method: "POST",
-				// 		headers: { "Content-Type": "application/json" },
-				// 		body: JSON.stringify(regResult),
-				// 	}
-				// );
 
-				if (verificationResponse.ok) {
+				if (verificationResponse.response.ok) {
 					alert("Passkeyの登録が完了しました");
 				} else {
 					throw new Error("登録に失敗しました");
 				}
 			} else {
 				// ログイン認証時のチャレンジを取得
-				const challengeResponse = await fetch(
-					`${process.env.BACKEND_URL}/passkey/login-challenge`,
-					{
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ email }),
-					}
+				const challengeResponse = await apiClient.POST(
+					"/passkey/login-challenge"
 				);
-				const challengeData = await challengeResponse.json();
+
+				const challengeData = await challengeResponse.response.json();
+				const setCookie =
+					challengeResponse.response.headers.get("Set-Cookie") || "";
 
 				// Passkeyでの認証
 				const authResult = await startAuthentication(challengeData);
 
 				// 認証結果をサーバーに送信
-				const verificationResponse = await fetch(
-					`${process.env.BACKEND_URL}/passkey/login`,
+				const verificationResponse = await apiClient.POST(
+					"/passkey/login",
 					{
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify(authResult),
+						params: {
+							cookie: {
+								__assertion__: setCookie,
+							},
+							body: JSON.stringify(authResult),
+						},
 					}
 				);
 
-				if (verificationResponse.ok) {
+				if (verificationResponse.response.ok) {
 					alert("ログインに成功しました");
 				} else {
 					throw new Error("ログインに失敗しました");

@@ -37,11 +37,6 @@ paths:
             summary: "Generate a login challenge"
             tags:
                 - WebAuthn
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/LoginChallengePasskeyRequest'
             responses:
                 '200':
                     description: OK
@@ -114,12 +109,16 @@ components:
     RegisterPasskeyRequest:
       type: object
       description: Finalize Attestation Request
-    LoginChallengePasskeyRequest:
-      type: object
-      description: Initialize Assertion Response
     LoginPasskeyRequest:
       type: object
       description: Finalize Assertion Request
     LoginPasskeyResponse:
       type: object
       description: Finalize Assertion Response
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionId
+security:
+  - cookieAuth: []

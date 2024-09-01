@@ -82,8 +82,6 @@ export interface components {
         LoginChallengePasskeyResponse: Record<string, never>;
         /** @description Finalize Attestation Request */
         RegisterPasskeyRequest: Record<string, never>;
-        /** @description Initialize Assertion Response */
-        LoginChallengePasskeyRequest: Record<string, never>;
         /** @description Finalize Assertion Request */
         LoginPasskeyRequest: Record<string, never>;
         /** @description Finalize Assertion Response */
@@ -133,11 +131,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["LoginChallengePasskeyRequest"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {

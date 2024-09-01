@@ -4,6 +4,7 @@
 package oapi
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -12,8 +13,9 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// LoginChallengePasskeyRequest Initialize Assertion Response
-type LoginChallengePasskeyRequest = map[string]interface{}
+const (
+	CookieAuthScopes = "cookieAuth.Scopes"
+)
 
 // LoginChallengePasskeyResponse Initialize Assertion Response
 type LoginChallengePasskeyResponse = map[string]interface{}
@@ -49,9 +51,6 @@ type RegisterChallengePasskeyJSONBody struct {
 
 // LoginPasskeyJSONRequestBody defines body for LoginPasskey for application/json ContentType.
 type LoginPasskeyJSONRequestBody = LoginPasskeyRequest
-
-// LoginChallengePasskeyJSONRequestBody defines body for LoginChallengePasskey for application/json ContentType.
-type LoginChallengePasskeyJSONRequestBody = LoginChallengePasskeyRequest
 
 // RegisterPasskeyJSONRequestBody defines body for RegisterPasskey for application/json ContentType.
 type RegisterPasskeyJSONRequestBody = RegisterPasskeyRequest
@@ -118,6 +117,8 @@ func (siw *ServerInterfaceWrapper) LoginPasskey(w http.ResponseWriter, r *http.R
 
 	var err error
 
+	ctx = context.WithValue(ctx, CookieAuthScopes, []string{})
+
 	// Parameter object where we will unmarshal all parameters from the context
 	var params LoginPasskeyParams
 
@@ -152,6 +153,8 @@ func (siw *ServerInterfaceWrapper) LoginPasskey(w http.ResponseWriter, r *http.R
 func (siw *ServerInterfaceWrapper) LoginChallengePasskey(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+	ctx = context.WithValue(ctx, CookieAuthScopes, []string{})
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.LoginChallengePasskey(w, r)
 	}))
@@ -168,6 +171,8 @@ func (siw *ServerInterfaceWrapper) RegisterPasskey(w http.ResponseWriter, r *htt
 	ctx := r.Context()
 
 	var err error
+
+	ctx = context.WithValue(ctx, CookieAuthScopes, []string{})
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params RegisterPasskeyParams
@@ -202,6 +207,8 @@ func (siw *ServerInterfaceWrapper) RegisterPasskey(w http.ResponseWriter, r *htt
 // RegisterChallengePasskey operation middleware
 func (siw *ServerInterfaceWrapper) RegisterChallengePasskey(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, CookieAuthScopes, []string{})
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.RegisterChallengePasskey(w, r)
