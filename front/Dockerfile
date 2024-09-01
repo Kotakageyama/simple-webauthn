@@ -18,6 +18,8 @@ FROM node:18-alpine
 
 WORKDIR /app
 
+RUN apk update && apk add --no-cache curl
+
 # ビルド成果物をコピー
 COPY --from=build /app/.next /app/.next
 COPY --from=build /app/public /app/public

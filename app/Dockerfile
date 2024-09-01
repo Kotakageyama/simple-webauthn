@@ -21,6 +21,8 @@ FROM golang:1.23-alpine
 
 WORKDIR /app
 
+RUN apk update && apk add --no-cache curl
+
 # ビルドされた実行ファイルをコピー
 COPY --from=builder /bin/server /bin/
 
