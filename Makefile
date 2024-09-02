@@ -42,6 +42,6 @@ logs:
 	docker-compose -f $(COMPOSE_FILE) logs -f
 
 # Restart the Docker containers
-restart: down up
+restart: down build up
 
 .PHONY: build up down install clean logs restart
