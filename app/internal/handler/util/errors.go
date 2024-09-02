@@ -18,3 +18,15 @@ func WriteErrorResponse(w http.ResponseWriter, code int, message string) {
 	}
 	_ = json.NewEncoder(w).Encode(response)
 }
+
+func WriteResponse(w http.ResponseWriter, code int, data any) {
+	w.WriteHeader(code)
+	_ = json.NewEncoder(w).Encode(data)
+}
+
+func SetCookie(w http.ResponseWriter, name, value string) {
+	http.SetCookie(w, &http.Cookie{
+		Name:  name,
+		Value: value,
+	})
+}

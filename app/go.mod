@@ -12,6 +12,7 @@ require (
 	github.com/oapi-codegen/oapi-codegen/v2 v2.3.0
 	github.com/oapi-codegen/runtime v1.1.1
 	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948
+	golang.org/x/xerrors v0.0.0-20220411194840-2f41105eb62f
 	gorm.io/gorm v1.25.11
 )
 

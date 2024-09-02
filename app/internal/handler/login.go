@@ -1,24 +1,20 @@
 package handler
 
 import (
-	"app/internal/domain"
 	"app/internal/handler/oapi"
 	"app/internal/handler/util"
-	"app/internal/lib"
+	"app/internal/usecase"
 	"encoding/json"
 	"net/http"
-	"strings"
-
-	"github.com/go-webauthn/webauthn/webauthn"
 )
 
 type Handlers struct {
-	WebAuthn *webauthn.WebAuthn
+	register usecase.RegisterUsecase
 }
 
-func NewHandlers(wc *webauthn.WebAuthn) *Handlers {
+func NewHandlers(register usecase.RegisterUsecase) *Handlers {
 	return &Handlers{
-		WebAuthn: wc,
+		register: register,
 	}
 }
 
@@ -47,20 +43,12 @@ func (h *Handlers) RegisterChallengePasskey(w http.ResponseWriter, r *http.Reque
 	}
 
 	strEmail := string(params.Email)
-	// emailを@マークで分割してDisplayNameに設定
-	emailParts := strings.Split(strEmail, "@")
-	displayName := emailParts[0]
-	user := &domain.User{
-		ID:          []byte(lib.RandomString(20)),
-		Name:        strEmail,
-		DisplayName: displayName,
-	}
 
-	options, session, err := h.WebAuthn.BeginRegistration(user)
+	options, sessionID, err := h.register.RegisterChallenge(strEmail)
 	if err != nil {
 		util.WriteErrorResponse(w, http.StatusInternalServerError, "Failed to begin registration")
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode("RegisterChallengePasskey")
+	util.SetCookie(w, sessionID.ToCookieKey(), sessionID.String())
+	util.WriteResponse(w, http.StatusOK, options)
 }

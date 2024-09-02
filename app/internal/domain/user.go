@@ -1,6 +1,11 @@
 package domain
 
-import "github.com/go-webauthn/webauthn/webauthn"
+import (
+	"app/internal/lib"
+	"strings"
+
+	"github.com/go-webauthn/webauthn/webauthn"
+)
 
 type User struct {
 	ID          []byte `json:"id"`
@@ -8,6 +13,17 @@ type User struct {
 	DisplayName string `json:"display_name,omitempty"`
 
 	Credentials []webauthn.Credential `json:"-"`
+}
+
+func NewUser(email string) User {
+	// emailを@マークで分割してDisplayNameに設定
+	emailParts := strings.Split(email, "@")
+	displayName := emailParts[0]
+	return User{
+		ID:          []byte(lib.RandomString(20)),
+		Name:        email,
+		DisplayName: displayName,
+	}
 }
 
 func (u *User) WebAuthnID() []byte {

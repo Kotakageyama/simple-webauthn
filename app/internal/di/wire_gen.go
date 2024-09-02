@@ -8,6 +8,8 @@ package di
 
 import (
 	"app/internal/handler"
+	"app/internal/repository"
+	"app/internal/usecase"
 	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/google/wire"
 	"gorm.io/gorm"
@@ -16,11 +18,17 @@ import (
 // Injectors from wire.go:
 
 func Wire(db *gorm.DB, WebAuthn *webauthn.WebAuthn) *handler.Handlers {
-	handlers := handler.NewHandlers(WebAuthn)
+	sessionRepository := repository.NewSessionRepository()
+	userRepository := repository.NewUserRepository()
+	registerUsecase := usecase.NewRegisterUsecase(sessionRepository, userRepository, WebAuthn)
+	handlers := handler.NewHandlers(registerUsecase)
 	return handlers
 }
 
 // wire.go:
 
-// プロバイダーセットの定義
+var repositorySet = wire.NewSet(repository.NewSessionRepository, repository.NewUserRepository)
+
+var usecaseSet = wire.NewSet(usecase.NewRegisterUsecase)
+
 var handlerSet = wire.NewSet(handler.NewHandlers)
