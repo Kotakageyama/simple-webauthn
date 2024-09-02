@@ -1,43 +1,41 @@
-version: '3.9'
-
 services:
-  front:
-    build:
-      context: ./front
-    ports:
-      - "3000:3000"
-    tty: true
-    depends_on:
-      app:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 5s
-    environment:
-      - BACKEND_URL=http://localhost:8080
+    front:
+        build:
+            context: ./front
+        ports:
+            - "3000:3000"
+        tty: true
+        depends_on:
+            app:
+                condition: service_healthy
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:3000"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 5s
+        environment:
+            - BACKEND_URL=http://localhost:8080
 
-  app:
-    build:
-      context: ./app
-    ports:
-      - "8080:8080"
-    tty: true
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    depends_on:
-      - db
-    
-  db:
-    image: postgres:latest
-    environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=simplewebauthndb
-    ports:
-      - "5432:5432"
+    app:
+        build:
+            context: ./app
+        ports:
+            - "8080:8080"
+        tty: true
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
+        depends_on:
+            - db
+
+    db:
+        image: postgres:latest
+        environment:
+            - POSTGRES_USER=user
+            - POSTGRES_PASSWORD=password
+            - POSTGRES_DB=simplewebauthndb
+        ports:
+            - "5432:5432"
