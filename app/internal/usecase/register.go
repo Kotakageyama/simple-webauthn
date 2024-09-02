@@ -11,6 +11,7 @@ import (
 
 type RegisterUsecase interface {
 	RegisterChallenge(name string) (*protocol.CredentialCreation, domain.SessionID, error)
+	RegisterPasskey(sessionID domain.SessionID, request *protocol.ParsedCredentialCreationData) error
 }
 
 type registerUsecase struct {
@@ -50,4 +51,31 @@ func (u *registerUsecase) RegisterChallenge(
 	}
 
 	return options, sessionID, nil
+}
+
+func (u *registerUsecase) RegisterPasskey(
+	sessionID domain.SessionID,
+	request *protocol.ParsedCredentialCreationData,
+) error {
+	user, err := u.user.Get(sessionID)
+	if err != nil {
+		return fmt.Errorf("failed to get user: %w", err)
+	}
+	session, err := u.session.Get(sessionID)
+	if err != nil {
+		return fmt.Errorf("failed to get session: %w", err)
+	}
+
+	credential, err := u.webAuth.CreateCredential(user, *session, request)
+	if err != nil {
+		return fmt.Errorf("failed to create credential: %w", err)
+	}
+
+	user.Credentials = append(user.Credentials, *credential)
+	err = u.user.Insert(sessionID, user)
+	if err != nil {
+		return fmt.Errorf("failed to insert user: %w", err)
+	}
+
+	return nil
 }

@@ -1,11 +1,14 @@
 package handler
 
 import (
+	"app/internal/domain"
 	"app/internal/handler/oapi"
 	"app/internal/handler/util"
 	"app/internal/usecase"
 	"encoding/json"
 	"net/http"
+
+	"github.com/go-webauthn/webauthn/protocol"
 )
 
 type Handlers struct {
@@ -29,8 +32,20 @@ func (h *Handlers) LoginChallengePasskey(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *Handlers) RegisterPasskey(w http.ResponseWriter, r *http.Request, params oapi.RegisterPasskeyParams) {
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode("RegisterPasskey")
+	sessionID := params.Attestation
+
+	request, err := protocol.ParseCredentialCreationResponseBody(r.Body)
+	if err != nil {
+		util.WriteErrorResponse(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
+	err = h.register.RegisterPasskey(domain.SessionID(sessionID), request)
+	if err != nil {
+		util.WriteErrorResponse(w, http.StatusInternalServerError, "Failed to register passkey")
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
 }
 
 func (h *Handlers) RegisterChallengePasskey(w http.ResponseWriter, r *http.Request) {

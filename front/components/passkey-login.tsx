@@ -46,12 +46,10 @@ export function PasskeyLogin() {
 				if (!response.ok) {
 					throw new Error("サーバーからのレスポンスが不正です");
 				}
-				console.log("Registration: ", data, response);
 
 				const setCookie = response.headers.get("Set-Cookie") || "";
 				const challengeData: PublicKeyCredentialCreationOptionsJSON =
-					JSON.parse("data");
-				response.body;
+					JSON.parse(JSON.stringify(data));
 
 				// Passkeyの登録
 				const regResult = await startRegistration(challengeData);
