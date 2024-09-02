@@ -25,7 +25,6 @@ import {
 	CredentialRequestOptionsJSON,
 } from "@github/webauthn-json/browser-ponyfill";
 import apiClient from "@/api/client";
-import { cookies } from "next/headers";
 
 export function PasskeyLogin() {
 	const [email, setEmail] = useState("");
@@ -42,6 +41,7 @@ export function PasskeyLogin() {
 					{
 						params: {},
 						body: { email },
+						credentials: "include",
 					}
 				);
 				if (error) {
@@ -50,10 +50,6 @@ export function PasskeyLogin() {
 				if (!response.ok) {
 					throw new Error("サーバーからのレスポンスが不正です");
 				}
-
-				const setCookie = response.headers.get("Set-Cookie") || "";
-				console.log("setCookie", setCookie);
-				console.log("getSetCookie", response.headers.getSetCookie());
 
 				const challengeResponseJSON: CredentialCreationOptionsJSON =
 					JSON.parse(JSON.stringify(data));
@@ -76,12 +72,12 @@ export function PasskeyLogin() {
 				const verificationResponse = await apiClient.POST(
 					"/passkey/register",
 					{
-						params: {
-							cookie: {
-								__attestation__: setCookie,
-							},
-							body: JSON.stringify(credential),
-						},
+						params: {},
+						credentials: "include",
+						body: JSON.stringify(credential) as unknown as Record<
+							string,
+							never
+						>,
 					}
 				);
 
@@ -93,7 +89,10 @@ export function PasskeyLogin() {
 			} else {
 				// ログイン認証時のチャレンジを取得
 				const { data, error, response } = await apiClient.POST(
-					"/passkey/login-challenge"
+					"/passkey/login-challenge",
+					{
+						credentials: "include",
+					}
 				);
 				if (error) {
 					throw new Error("サーバーからのレスポンスが不正です");
@@ -124,12 +123,11 @@ export function PasskeyLogin() {
 				const verificationResponse = await apiClient.POST(
 					"/passkey/login",
 					{
-						params: {
-							cookie: {
-								__assertion__: setCookie,
-							},
-							body: JSON.stringify(credential),
-						},
+						body: JSON.stringify(credential) as unknown as Record<
+							string,
+							never
+						>,
+						credentials: "include",
 					}
 				);
 

@@ -152,10 +152,7 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
-            cookie: {
-                /** @description session */
-                __attestation__: string;
-            };
+            cookie?: never;
         };
         requestBody?: {
             content: {
@@ -177,10 +174,7 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
-            cookie: {
-                /** @description session */
-                __assertion__: string;
-            };
+            cookie?: never;
         };
         requestBody?: {
             content: {

@@ -51,14 +51,6 @@ paths:
             summary: "Register a passkey"
             tags:
                 - WebAuthn
-            parameters:
-                - name: __attestation__
-                  in: cookie
-                  description: session
-                  required: true
-                  schema:
-                        type: string
-                        example: session
             requestBody:
                 content:
                     application/json:
@@ -73,14 +65,6 @@ paths:
             summary: "Login with a passkey"
             tags:
                 - WebAuthn
-            parameters:
-                - name: __assertion__
-                  in: cookie
-                  description: session
-                  required: true
-                  schema:
-                        type: string
-                        example: session
             requestBody:
                 content:
                     application/json:
@@ -123,6 +107,6 @@ components:
     cookieAuth:
       type: apiKey
       in: cookie
-      name: sessionId
+      name: session_id
 security:
   - cookieAuth: []

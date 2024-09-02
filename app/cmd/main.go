@@ -38,7 +38,8 @@ func main() {
 	corsOptions := cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"}, // 許可するオリジン
 		AllowedMethods:   []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Set-Cookie"},
+		ExposedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Set-Cookie"},
 		AllowCredentials: true,
 		MaxAge:           300, // キャッシュの有効期限（秒）
 	}

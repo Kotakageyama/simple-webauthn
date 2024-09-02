@@ -21,7 +21,7 @@ func NewHandlers(register usecase.RegisterUsecase) *Handlers {
 	}
 }
 
-func (h *Handlers) LoginPasskey(w http.ResponseWriter, r *http.Request, params oapi.LoginPasskeyParams) {
+func (h *Handlers) LoginPasskey(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode("LoginPasskey")
 }
@@ -31,8 +31,14 @@ func (h *Handlers) LoginChallengePasskey(w http.ResponseWriter, r *http.Request)
 	_ = json.NewEncoder(w).Encode("LoginChallengePasskey")
 }
 
-func (h *Handlers) RegisterPasskey(w http.ResponseWriter, r *http.Request, params oapi.RegisterPasskeyParams) {
-	sessionID := params.Attestation
+func (h *Handlers) RegisterPasskey(w http.ResponseWriter, r *http.Request) {
+	// クッキーからセッションIDを取得
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		util.WriteErrorResponse(w, http.StatusUnauthorized, "Session ID not found")
+		return
+	}
+	sessionID := cookie.Value
 
 	request, err := protocol.ParseCredentialCreationResponseBody(r.Body)
 	if err != nil {
