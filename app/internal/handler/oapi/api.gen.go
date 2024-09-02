@@ -26,6 +26,11 @@ type LoginPasskeyRequest = map[string]interface{}
 // LoginPasskeyResponse Finalize Assertion Response
 type LoginPasskeyResponse = map[string]interface{}
 
+// RegisterChallengePasskeyRequest defines model for RegisterChallengePasskeyRequest.
+type RegisterChallengePasskeyRequest struct {
+	Email openapi_types.Email `json:"email"`
+}
+
 // RegisterChallengePasskeyResponse Initialize Attestation Response
 type RegisterChallengePasskeyResponse = map[string]interface{}
 
@@ -44,11 +49,6 @@ type RegisterPasskeyParams struct {
 	Attestation string `form:"__attestation__" json:"__attestation__"`
 }
 
-// RegisterChallengePasskeyJSONBody defines parameters for RegisterChallengePasskey.
-type RegisterChallengePasskeyJSONBody struct {
-	Email *openapi_types.Email `json:"email,omitempty"`
-}
-
 // LoginPasskeyJSONRequestBody defines body for LoginPasskey for application/json ContentType.
 type LoginPasskeyJSONRequestBody = LoginPasskeyRequest
 
@@ -56,7 +56,7 @@ type LoginPasskeyJSONRequestBody = LoginPasskeyRequest
 type RegisterPasskeyJSONRequestBody = RegisterPasskeyRequest
 
 // RegisterChallengePasskeyJSONRequestBody defines body for RegisterChallengePasskey for application/json ContentType.
-type RegisterChallengePasskeyJSONRequestBody RegisterChallengePasskeyJSONBody
+type RegisterChallengePasskeyJSONRequestBody = RegisterChallengePasskeyRequest
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
