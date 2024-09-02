@@ -35,20 +35,20 @@ func (h *Handlers) RegisterPasskey(w http.ResponseWriter, r *http.Request) {
 	// クッキーからセッションIDを取得
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
-		util.WriteErrorResponse(w, http.StatusUnauthorized, "Session ID not found")
+		util.WriteErrorResponse(w, http.StatusUnauthorized, "Session ID not found", err)
 		return
 	}
 	sessionID := cookie.Value
 
 	request, err := protocol.ParseCredentialCreationResponseBody(r.Body)
 	if err != nil {
-		util.WriteErrorResponse(w, http.StatusBadRequest, "Invalid request payload")
+		util.WriteErrorResponse(w, http.StatusBadRequest, "Invalid request payload", err)
 		return
 	}
 
 	err = h.register.RegisterPasskey(domain.SessionID(sessionID), request)
 	if err != nil {
-		util.WriteErrorResponse(w, http.StatusInternalServerError, "Failed to register passkey")
+		util.WriteErrorResponse(w, http.StatusInternalServerError, "Failed to register passkey", err)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
@@ -59,7 +59,7 @@ func (h *Handlers) RegisterChallengePasskey(w http.ResponseWriter, r *http.Reque
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&params)
 	if err != nil {
-		util.WriteErrorResponse(w, http.StatusBadRequest, "Invalid request payload")
+		util.WriteErrorResponse(w, http.StatusBadRequest, "Invalid request payload", err)
 		return
 	}
 
@@ -67,7 +67,7 @@ func (h *Handlers) RegisterChallengePasskey(w http.ResponseWriter, r *http.Reque
 
 	options, sessionID, err := h.register.RegisterChallenge(strEmail)
 	if err != nil {
-		util.WriteErrorResponse(w, http.StatusInternalServerError, "Failed to begin registration")
+		util.WriteErrorResponse(w, http.StatusInternalServerError, "Failed to begin registration", err)
 		return
 	}
 	util.SetCookie(w, sessionID.ToCookieKey(), sessionID.String())

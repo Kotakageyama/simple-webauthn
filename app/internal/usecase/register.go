@@ -45,7 +45,7 @@ func (u *registerUsecase) RegisterChallenge(
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to insert session: %w", err)
 	}
-	err = u.user.Insert(sessionID, &user)
+	err = u.user.Create(sessionID, &user)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to insert user: %w", err)
 	}
@@ -72,9 +72,9 @@ func (u *registerUsecase) RegisterPasskey(
 	}
 
 	user.Credentials = append(user.Credentials, *credential)
-	err = u.user.Insert(sessionID, user)
+	err = u.user.Update(sessionID, user)
 	if err != nil {
-		return fmt.Errorf("failed to insert user: %w", err)
+		return fmt.Errorf("failed to update user: %w", err)
 	}
 
 	return nil

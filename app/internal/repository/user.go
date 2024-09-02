@@ -7,7 +7,8 @@ import (
 )
 
 type UserRepository interface {
-	Insert(id domain.SessionID, user *domain.User) error
+	Create(id domain.SessionID, user *domain.User) error
+	Update(id domain.SessionID, user *domain.User) error
 	Get(id domain.SessionID) (*domain.User, error)
 	GetByUserId(userId []byte) (*domain.User, error)
 }
@@ -22,9 +23,17 @@ func NewUserRepository() UserRepository {
 	}
 }
 
-func (r *userRepository) Insert(id domain.SessionID, user *domain.User) error {
+func (r *userRepository) Create(id domain.SessionID, user *domain.User) error {
 	if _, exists := r.Users[id]; exists {
 		return xerrors.New("user already exists")
+	}
+	r.Users[id] = user
+	return nil
+}
+
+func (r *userRepository) Update(id domain.SessionID, user *domain.User) error {
+	if _, exists := r.Users[id]; !exists {
+		return xerrors.New("not found user")
 	}
 	r.Users[id] = user
 	return nil

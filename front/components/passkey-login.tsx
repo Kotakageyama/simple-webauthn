@@ -74,10 +74,7 @@ export function PasskeyLogin() {
 					{
 						params: {},
 						credentials: "include",
-						body: JSON.stringify(credential) as unknown as Record<
-							string,
-							never
-						>,
+						body: JSON.parse(JSON.stringify(credential)),
 					}
 				);
 
@@ -123,10 +120,7 @@ export function PasskeyLogin() {
 				const verificationResponse = await apiClient.POST(
 					"/passkey/login",
 					{
-						body: JSON.stringify(credential) as unknown as Record<
-							string,
-							never
-						>,
+						body: JSON.parse(JSON.stringify(credential)),
 						credentials: "include",
 					}
 				);

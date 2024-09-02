@@ -2,6 +2,7 @@ package util
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
@@ -10,7 +11,8 @@ type ErrorResponse struct {
 	Message string `json:"message"`
 }
 
-func WriteErrorResponse(w http.ResponseWriter, code int, message string) {
+func WriteErrorResponse(w http.ResponseWriter, code int, message string, err error) {
+	log.Printf("Message: %v, Error: %+v", message, err)
 	w.WriteHeader(code)
 	response := ErrorResponse{
 		Code:    code,
