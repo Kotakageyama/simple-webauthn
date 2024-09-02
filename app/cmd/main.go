@@ -49,7 +49,7 @@ func main() {
 		w.Write([]byte("OK"))
 	})
 
-	handler := di.Wire(nil)
+	handler := di.Wire(nil, Wc)
 	h := oapi.HandlerFromMux(handler, r)
 
 	// サーバーを起動

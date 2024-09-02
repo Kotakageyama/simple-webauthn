@@ -8,14 +8,15 @@ package di
 
 import (
 	"app/internal/handler"
+	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/google/wire"
 	"gorm.io/gorm"
 )
 
 // Injectors from wire.go:
 
-func Wire(db *gorm.DB) *handler.Handlers {
-	handlers := handler.NewHandlers()
+func Wire(db *gorm.DB, WebAuthn *webauthn.WebAuthn) *handler.Handlers {
+	handlers := handler.NewHandlers(WebAuthn)
 	return handlers
 }
 

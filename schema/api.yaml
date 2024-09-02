@@ -14,11 +14,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            type: object
-                            properties:
-                                email:
-                                    type: string
-                                    format: email
+                            $ref: "#/components/schemas/RegisterChallengePasskeyRequest" 
             responses:
                 "200":
                     description: "Challenge generated"
@@ -100,6 +96,14 @@ paths:
 
 components:
   schemas:
+    RegisterChallengePasskeyRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+        - email
     RegisterChallengePasskeyResponse:
       type: object
       description: Initialize Attestation Response

@@ -76,6 +76,10 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        RegisterChallengePasskeyRequest: {
+            /** Format: email */
+            email: string;
+        };
         /** @description Initialize Attestation Response */
         RegisterChallengePasskeyResponse: Record<string, never>;
         /** @description Initialize Assertion Response */
@@ -104,10 +108,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": {
-                    /** Format: email */
-                    email?: string;
-                };
+                "application/json": components["schemas"]["RegisterChallengePasskeyRequest"];
             };
         };
         responses: {

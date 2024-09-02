@@ -6,6 +6,7 @@ package di
 import (
 	"app/internal/handler"
 
+	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/google/wire"
 	"gorm.io/gorm"
 )
@@ -17,6 +18,7 @@ var handlerSet = wire.NewSet(
 
 func Wire(
 	db *gorm.DB,
+	WebAuthn *webauthn.WebAuthn,
 ) *handler.Handlers {
 	wire.Build(
 		handlerSet,
