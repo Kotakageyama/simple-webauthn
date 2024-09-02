@@ -17,9 +17,13 @@ import {
 	startAuthentication,
 } from "@simplewebauthn/browser";
 import {
-	PublicKeyCredentialCreationOptionsJSON,
-	PublicKeyCredentialRequestOptionsJSON,
-} from "@simplewebauthn/types";
+	create,
+	parseCreationOptionsFromJSON,
+	parseRequestOptionsFromJSON,
+	get,
+	CredentialCreationOptionsJSON,
+	CredentialRequestOptionsJSON,
+} from "@github/webauthn-json/browser-ponyfill";
 import apiClient from "@/api/client";
 import { cookies } from "next/headers";
 
@@ -48,11 +52,25 @@ export function PasskeyLogin() {
 				}
 
 				const setCookie = response.headers.get("Set-Cookie") || "";
-				const challengeData: PublicKeyCredentialCreationOptionsJSON =
+				console.log("setCookie", setCookie);
+				console.log("getSetCookie", response.headers.getSetCookie());
+
+				const challengeResponseJSON: CredentialCreationOptionsJSON =
 					JSON.parse(JSON.stringify(data));
+				const credentialData = parseCreationOptionsFromJSON(
+					challengeResponseJSON
+				);
 
 				// Passkeyの登録
-				const regResult = await startRegistration(challengeData);
+				let credential: Credential | null;
+				try {
+					credential = await create(credentialData);
+				} catch (e) {
+					throw new Error("Passkeyの登録に失敗しました");
+				}
+				if (!credential) {
+					throw new Error("Passkeyの登録に失敗しました");
+				}
 
 				// 登録結果をサーバーに送信
 				const verificationResponse = await apiClient.POST(
@@ -62,7 +80,7 @@ export function PasskeyLogin() {
 							cookie: {
 								__attestation__: setCookie,
 							},
-							body: JSON.stringify(regResult),
+							body: JSON.stringify(credential),
 						},
 					}
 				);
@@ -74,17 +92,33 @@ export function PasskeyLogin() {
 				}
 			} else {
 				// ログイン認証時のチャレンジを取得
-				const { response: challengeResponse } = await apiClient.POST(
+				const { data, error, response } = await apiClient.POST(
 					"/passkey/login-challenge"
 				);
-				const setCookie =
-					challengeResponse.headers.get("Set-Cookie") || "";
-				const challengeResponseText = await challengeResponse.text();
-				const challengeData: PublicKeyCredentialRequestOptionsJSON =
-					JSON.parse(challengeResponseText);
+				if (error) {
+					throw new Error("サーバーからのレスポンスが不正です");
+				}
+				if (!response.ok) {
+					throw new Error("サーバーからのレスポンスが不正です");
+				}
 
-				// Passkeyでの認証
-				const authResult = await startAuthentication(challengeData);
+				const setCookie = response.headers.get("Set-Cookie") || "";
+				const challengeResponseJSON: CredentialRequestOptionsJSON =
+					JSON.parse(JSON.stringify(data));
+				let credentialData = parseRequestOptionsFromJSON(
+					challengeResponseJSON
+				);
+
+				// Passkeyの認証
+				let credential: Credential;
+				try {
+					credential = await get(credentialData);
+				} catch (e) {
+					throw new Error("Passkeyの認証に失敗しました");
+				}
+				if (!credential) {
+					throw new Error("Passkeyの認証に失敗しました");
+				}
 
 				// 認証結果をサーバーに送信
 				const verificationResponse = await apiClient.POST(
@@ -94,7 +128,7 @@ export function PasskeyLogin() {
 							cookie: {
 								__assertion__: setCookie,
 							},
-							body: JSON.stringify(authResult),
+							body: JSON.stringify(credential),
 						},
 					}
 				);
