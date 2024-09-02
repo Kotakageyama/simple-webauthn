@@ -21,7 +21,8 @@ func Wire(db *gorm.DB, WebAuthn *webauthn.WebAuthn) *handler.Handlers {
 	sessionRepository := repository.NewSessionRepository()
 	userRepository := repository.NewUserRepository()
 	registerUsecase := usecase.NewRegisterUsecase(sessionRepository, userRepository, WebAuthn)
-	handlers := handler.NewHandlers(registerUsecase)
+	loginUsecase := usecase.NewLoginUsecase(sessionRepository, userRepository, WebAuthn)
+	handlers := handler.NewHandlers(registerUsecase, loginUsecase)
 	return handlers
 }
 
@@ -29,6 +30,6 @@ func Wire(db *gorm.DB, WebAuthn *webauthn.WebAuthn) *handler.Handlers {
 
 var repositorySet = wire.NewSet(repository.NewSessionRepository, repository.NewUserRepository)
 
-var usecaseSet = wire.NewSet(usecase.NewRegisterUsecase)
+var usecaseSet = wire.NewSet(usecase.NewRegisterUsecase, usecase.NewLoginUsecase)
 
 var handlerSet = wire.NewSet(handler.NewHandlers)

@@ -20,6 +20,7 @@ var repositorySet = wire.NewSet(
 
 var usecaseSet = wire.NewSet(
 	usecase.NewRegisterUsecase,
+	usecase.NewLoginUsecase,
 )
 
 var handlerSet = wire.NewSet(
