@@ -5,6 +5,10 @@
 この Repository は Passkeys と World ID を利用した認証システムの学習用に作成されました。
 This repository was created to learn about authentication using Passkeys and World ID.
 
+## 担当者 / Assignee
+
+- @darshasilje
+
 ## 認証方式 / Authentication Methods
 
 ### Passkeys
