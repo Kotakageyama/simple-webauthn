@@ -8,11 +8,12 @@ import (
 )
 
 type User struct {
-	ID          []byte `json:"id"`
-	Name        string `json:"name"`
-	DisplayName string `json:"display_name,omitempty"`
-
-	Credentials []webauthn.Credential `json:"-"`
+	ID              []byte `json:"id"`
+	Name            string `json:"name"`
+	DisplayName     string `json:"display_name,omitempty"`
+	AuthMethod      string `json:"auth_method"` // "passkey" or "worldid"
+	WorldIDVerified bool   `json:"world_id_verified,omitempty"`
+	Credentials     []webauthn.Credential `json:"-"`
 }
 
 func NewUser(email string) User {
@@ -23,6 +24,7 @@ func NewUser(email string) User {
 		ID:          []byte(lib.RandomString(20)),
 		Name:        email,
 		DisplayName: displayName,
+		AuthMethod:  "passkey", // Default to passkey authentication
 	}
 }
 

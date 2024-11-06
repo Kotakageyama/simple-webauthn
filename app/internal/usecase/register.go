@@ -36,43 +36,57 @@ func (u *registerUsecase) RegisterChallenge(
 	email string,
 ) (*protocol.CredentialCreation, domain.SessionID, error) {
 	user := domain.NewUser(email)
-	options, session, err := u.webAuth.BeginRegistration(&user)
+	options, waSession, err := u.webAuth.BeginRegistration(&user)
 	if err != nil {
 		return nil, "", err
 	}
 
-	sessionID, err := u.session.Insert(session)
+	// Convert WebAuthn session to domain session
+	session := repository.ConvertWebAuthnSession(waSession, user.ID)
+
+	err = u.session.Insert(session)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to insert session: %w", err)
 	}
-	err = u.user.Create(sessionID, &user)
+
+	err = u.user.Create(&user)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to insert user: %w", err)
 	}
 
-	return options, sessionID, nil
+	return options, session.ID, nil
 }
 
 func (u *registerUsecase) RegisterPasskey(
 	sessionID domain.SessionID,
 	request *protocol.ParsedCredentialCreationData,
 ) error {
-	user, err := u.user.Get(sessionID)
-	if err != nil {
-		return fmt.Errorf("failed to get user: %w", err)
-	}
 	session, err := u.session.Get(sessionID)
 	if err != nil {
 		return fmt.Errorf("failed to get session: %w", err)
 	}
 
-	credential, err := u.webAuth.CreateCredential(user, *session, request)
+	user, err := u.user.Get(session.UserID)
+	if err != nil {
+		return fmt.Errorf("failed to get user: %w", err)
+	}
+
+	// Convert domain session back to WebAuthn session
+	waSession := &webauthn.SessionData{
+		Challenge:           session.WebAuthnData.Challenge,
+		UserID:             session.WebAuthnData.UserID,
+		AllowedCredentialIDs: session.WebAuthnData.AllowCredentials,
+		UserVerification:    session.WebAuthnData.UserVerification,
+		Extensions:         session.WebAuthnData.Extensions,
+	}
+
+	credential, err := u.webAuth.CreateCredential(user, *waSession, request)
 	if err != nil {
 		return fmt.Errorf("failed to create credential: %w", err)
 	}
 
 	user.Credentials = append(user.Credentials, *credential)
-	err = u.user.Update(sessionID, user)
+	err = u.user.Update(user)
 	if err != nil {
 		return fmt.Errorf("failed to update user: %w", err)
 	}
