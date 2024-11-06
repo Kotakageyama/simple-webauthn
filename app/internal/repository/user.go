@@ -2,45 +2,61 @@ package repository
 
 import (
 	"app/internal/domain"
-
 	"golang.org/x/xerrors"
 )
 
 type UserRepository interface {
-	Create(id domain.SessionID, user *domain.User) error
-	Update(id domain.SessionID, user *domain.User) error
-	Get(id domain.SessionID) (*domain.User, error)
+	Create(user *domain.User) error
+	Update(user *domain.User) error
+	Get(id []byte) (*domain.User, error)
 	GetByUserId(userId []byte) (*domain.User, error)
+	GetByWorldIDNullifier(nullifier string) (*domain.User, error)
 }
 
 type userRepository struct {
-	Users map[domain.SessionID]*domain.User
+	UsersByID        map[string]*domain.User // key: string(user.ID)
+	UsersByNullifier map[string]*domain.User // key: World ID nullifier
 }
 
 func NewUserRepository() UserRepository {
 	return &userRepository{
-		Users: map[domain.SessionID]*domain.User{},
+		UsersByID:        make(map[string]*domain.User),
+		UsersByNullifier: make(map[string]*domain.User),
 	}
 }
 
-func (r *userRepository) Create(id domain.SessionID, user *domain.User) error {
-	if _, exists := r.Users[id]; exists {
+func (r *userRepository) Create(user *domain.User) error {
+	if _, exists := r.UsersByID[string(user.ID)]; exists {
 		return xerrors.New("user already exists")
 	}
-	r.Users[id] = user
-	return nil
-}
 
-func (r *userRepository) Update(id domain.SessionID, user *domain.User) error {
-	if _, exists := r.Users[id]; !exists {
-		return xerrors.New("not found user")
+	r.UsersByID[string(user.ID)] = user
+
+	// If this is a World ID user, also store by nullifier
+	if user.AuthMethod == "worldid" {
+		r.UsersByNullifier[string(user.ID)] = user // For World ID users, ID is the nullifier
 	}
-	r.Users[id] = user
+
 	return nil
 }
 
-func (r *userRepository) Get(id domain.SessionID) (*domain.User, error) {
-	u, ok := r.Users[id]
+func (r *userRepository) Update(user *domain.User) error {
+	if _, exists := r.UsersByID[string(user.ID)]; !exists {
+		return xerrors.New("user not found")
+	}
+
+	r.UsersByID[string(user.ID)] = user
+
+	// Update nullifier index if this is a World ID user
+	if user.AuthMethod == "worldid" {
+		r.UsersByNullifier[string(user.ID)] = user
+	}
+
+	return nil
+}
+
+func (r *userRepository) Get(id []byte) (*domain.User, error) {
+	u, ok := r.UsersByID[string(id)]
 	if !ok {
 		return nil, xerrors.New("user not found")
 	}
@@ -48,10 +64,13 @@ func (r *userRepository) Get(id domain.SessionID) (*domain.User, error) {
 }
 
 func (r *userRepository) GetByUserId(userID []byte) (*domain.User, error) {
-	for _, u := range r.Users {
-		if string(u.ID) == string(userID) {
-			return u, nil
-		}
+	return r.Get(userID)
+}
+
+func (r *userRepository) GetByWorldIDNullifier(nullifier string) (*domain.User, error) {
+	user, ok := r.UsersByNullifier[nullifier]
+	if !ok {
+		return nil, xerrors.New("user not found")
 	}
-	return nil, xerrors.New("user not found")
+	return user, nil
 }

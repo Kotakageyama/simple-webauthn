@@ -78,6 +78,30 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/LoginPasskeyResponse'
 
+    /worldid/verify:
+        post:
+            operationId: verify-worldid
+            summary: "Verify with World ID"
+            tags:
+                - WorldID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/WorldIDVerifyRequest'
+            responses:
+                '200':
+                    description: "Verification successful"
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/WorldIDVerifyResponse'
+                    headers:
+                        Set-Cookie:
+                            description: Set-Cookie
+                            schema:
+                                type: string
+
 components:
   schemas:
     RegisterChallengePasskeyRequest:
@@ -103,6 +127,33 @@ components:
     LoginPasskeyResponse:
       type: object
       description: Finalize Assertion Response
+
+    WorldIDVerifyRequest:
+      type: object
+      properties:
+        proof:
+          type: object
+          description: World ID verification proof
+        action:
+          type: string
+          description: Action identifier for verification
+        signal:
+          type: string
+          description: Signal for verification
+      required:
+        - proof
+        - action
+        - signal
+
+    WorldIDVerifyResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Whether verification was successful
+        message:
+          type: string
+          description: Additional information about the verification result
   securitySchemes:
     cookieAuth:
       type: apiKey
